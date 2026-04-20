@@ -5,11 +5,10 @@ from datetime import datetime
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BD_PATH = os.path.join(BASE_DIR, "inventario.db")
 
-print(BD_PATH)
 
 def conectar():
     conexion = sqlite3.connect(BD_PATH)
-    conexion.execute("PRAGMA foreing_keys = ON")
+    conexion.execute("PRAGMA foreign_keys = ON")
     return conexion
 
 def crear_tabla():
@@ -32,6 +31,24 @@ def crear_tabla():
         cantidad INTEGER,
         total REAL,
         FOREIGN KEY (id_producto) REFERENCES productos(id)          
+    )
+    """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS clientes(
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL,
+        apellido TEXT NOT NULL,
+        cedula_ruc TEXT UNIQUE,
+        celular TEXT,
+        correo TEXT
+    )
+    """)
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS usuarios (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT UNIQUE NOT NULL,
+        password_hash TEXT NOT NULL,
+        rol TEXT NOT NULL   
     )
     """)
     conexion.commit()
@@ -133,6 +150,93 @@ def obtener_ventas_db():
 
     conexion.close()
     return ventas
+
+def agregar_clientes_db(nombre, apellido, cedula_ruc, celular, correo):
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+    INSERT INTO clientes(nombre, apellido, cedula_ruc, celular, correo) 
+    VALUES(?, ?, ?, ?, ?)
+    """, (nombre, apellido, cedula_ruc, celular, correo))
+
+    conexion.commit()
+    conexion.close()
+
+def listar_clientes_db():
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("SELECT * FROM clientes")
+    clientes = cursor.fetchall()
+
+    conexion.close()
+    return clientes
+
+def actualizar_cliente_db(id, nombre, apellido, cedula_ruc, celular, correo):
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        UPDATE clientes
+        SET nombre = ?, apellido=?, cedula_ruc=?, celular=?, correo = ? 
+        WHERE id = ?
+        """,
+        (nombre, apellido, cedula_ruc, celular, correo, id)
+        )
+
+    conexion.commit()
+    conexion.close()
+
+def agregar_usuarios_db(username, password_hash, rol):
+
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        INSERT INTO usuarios( username, password_hash, rol)
+        VALUES(?,?,?)
+    """, (username, password_hash, rol))
+
+    conexion.commit()
+    conexion.close()
+
+def listar_usuarios_db():
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute(""" SELECT * FROM usuarios """)
+    usuarios = cursor.fetchall()
+
+    conexion.close()
+    return usuarios
+
+def actualizar_usuario_db(id, username, password_hash, rol):
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET username = ?, password_hash=?, rol=? WHERE id = ?
+    """, (username, password_hash, rol, id)
+    )
+    conexion.commit()
+    conexion.close()
+
+def eliminar_usuario_db(id):
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+    DELETE FROM usuarios WHERE id = ?
+    """, (id))
+
+    conexion.commit()
+    conexion.close()
+
+if __name__ == "__main__":
+    crear_tabla()
+
 
 
 

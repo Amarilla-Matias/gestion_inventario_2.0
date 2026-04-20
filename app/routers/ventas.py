@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from database import obtener_producto_db, actualizar_stock_db, guardar_ventas_db, obtener_ventas_db
+from app.database.database import obtener_producto_db, actualizar_stock_db, guardar_ventas_db, obtener_ventas_db
 
 app = FastAPI()
 

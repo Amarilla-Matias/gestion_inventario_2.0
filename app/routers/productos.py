@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from database import obtener_productos_db, actualizar_stock_db, agregar_producto_db, eliminar_producto_db
+from app.database.database import obtener_productos_db, actualizar_stock_db, agregar_producto_db, eliminar_producto_db
 
 app = FastAPI()
 
