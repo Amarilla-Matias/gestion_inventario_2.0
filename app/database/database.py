@@ -4,7 +4,7 @@ from datetime import datetime
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BD_PATH = os.path.join(BASE_DIR, "inventario.db")
-
+DB_PATH = "app/database/inventario.db"
 
 def conectar():
     conexion = sqlite3.connect(BD_PATH)
@@ -211,6 +211,14 @@ def listar_usuarios_db():
     conexion.close()
     return usuarios
 
+def obtener_usuario_por_username(username: str):
+    with sqlite3.connect(DB_PATH) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT id, username, password_hash, rol FROM usuarios WHERE username = ?",(username,))
+        row = cursor.fetchone()
+        if row:
+            return {"id": row[0], "username": row[1], "password_hash": row[2], "rol": row[3]}
+
 def actualizar_usuario_db(id, username, password_hash, rol):
     conexion = conectar()
     cursor = conexion.cursor()
@@ -229,7 +237,7 @@ def eliminar_usuario_db(id):
 
     cursor.execute("""
     DELETE FROM usuarios WHERE id = ?
-    """, (id))
+    """, (id,))
 
     conexion.commit()
     conexion.close()
