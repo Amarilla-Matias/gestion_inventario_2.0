@@ -33,7 +33,7 @@ def listar_clientes():
 
 @router.post("/")
 def agregar_cliente(nombre, apellido, cedula_ruc, celular, correo):
-    id_cliente = agregar_clientes_db(nombre, apellido, cedula_ruc, celular, correo)
+    agregar_clientes_db(nombre, apellido, cedula_ruc, celular, correo)
     return {"mensaje": f"Cliente {nombre} creado"}
 
 @router.put("/{id}")

@@ -1,14 +1,17 @@
-from fastapi import FastAPI
+from fastapi import APIRouter
 from pydantic import BaseModel
 from app.database.database import obtener_producto_db, actualizar_stock_db, guardar_ventas_db, obtener_ventas_db
 
-app = FastAPI()
+router = APIRouter(
+    prefix ="/ventas",
+    tags=["ventas"]
+)
 
 class Venta(BaseModel):
     id_producto : int
     cantidad: int
 
-@app.post("/ventas")
+@router.post("/ventas")
 def registrar_venta(venta: Venta):
     producto = obtener_producto_db(venta.id_producto)
     if producto is None:
@@ -35,7 +38,7 @@ def registrar_venta(venta: Venta):
         "stock_restante": nuevo_stock 
         }
 
-@app.get("/ventas")
+@router.get("/ventas")
 def listar_ventas():
     ventas = obtener_ventas_db()
 

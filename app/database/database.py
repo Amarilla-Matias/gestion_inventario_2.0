@@ -6,6 +6,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 BD_PATH = os.path.join(BASE_DIR, "inventario.db")
 DB_PATH = "app/database/inventario.db"
 
+
 def conectar():
     conexion = sqlite3.connect(BD_PATH)
     conexion.execute("PRAGMA foreign_keys = ON")
@@ -211,13 +212,14 @@ def listar_usuarios_db():
     conexion.close()
     return usuarios
 
-def obtener_usuario_por_username(username: str):
-    with sqlite3.connect(DB_PATH) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT id, username, password_hash, rol FROM usuarios WHERE username = ?",(username,))
-        row = cursor.fetchone()
-        if row:
-            return {"id": row[0], "username": row[1], "password_hash": row[2], "rol": row[3]}
+def obtener_usuario_por_username(username):
+    conexion = conectar()
+    cursor = conexion.cursor()
+    cursor.execute("SELECT * FROM usuarios WHERE username = ?", (username,))
+    usuario = cursor.fetchone()
+    conexion.close()
+    return usuario
+    
 
 def actualizar_usuario_db(id, username, password_hash, rol):
     conexion = conectar()
