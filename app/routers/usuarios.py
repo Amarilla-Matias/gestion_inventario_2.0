@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from gestion_inventario.app.auth.auth import generar_hash, verificar_password, encode_token, decode_token
+from app.auth.auth import generar_hash, verificar_password, encode_token, decode_token
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from app.database.database import eliminar_usuario_db, actualizar_usuario_db, agregar_usuarios_db, obtener_usuario_por_username, listar_usuarios_db
 from fastapi import APIRouter, Depends, HTTPException
@@ -27,18 +27,28 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=400, detail= "Usuario Incorrecto")
     
     token = encode_token({
-        "username": user[1]
+        "username": user[1],
+        "rol": user[3]
     })
 
     return{"access_token": token}
 def get_current_user(token: str = Depends(oauth_scheme)):
     data = decode_token(token)
-    user = obtener_usuario_por_username
+    username = data["username"]
+    user = obtener_usuario_por_username(username)
     return user
 
+def verificar_admin(
+    user: dict = Depends(get_current_user)
+):
+    if user[3] != "admin":
+        raise HTTPException(status_code=400, detail="No tienes permisos")
+    return user
 @router.get("/perfil")
 def perfil(user:dict = Depends(get_current_user)):
     return user
+
+
 
 @router.get("/usuarios")
 def listar_usuarios():
@@ -63,8 +73,9 @@ def registrar_usuario(usuario: UsuarioCreate):
         usuario.rol)
     return {"mensaje": "Usuario creado exitosamente"}
 
-@router.put("/{id}")
-def actualizar_usuario(id: int, usuario: UsuarioUpdate):
+
+@router.put("/usuarios/{id}")
+def actualizar_usuario(id: int, usuario: UsuarioUpdate, admin = Depends(verificar_admin)):
     password_hash = generar_hash(usuario.password)
     actualizar_usuario_db(
         id,
@@ -75,7 +86,7 @@ def actualizar_usuario(id: int, usuario: UsuarioUpdate):
     return {"mensaje": "Datos actualizados correctamente"}
 
 
-@router.delete("/{id}")
-def eliminar_usuario(id):
+@router.delete("/usuarios/{id}")
+def eliminar_usuario(id: int , admin = Depends(verificar_admin)):
     eliminar_usuario_db(id)
     return {"mensaje:" f"Usuario {id} eliminado"}

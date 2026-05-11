@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from app.routers import clientes, productos, ventas, usuarios
 from app.database.database import crear_tabla
-from gestion_inventario.app.routers import usuarios
+from app.routers import usuarios
 
 crear_tabla()
 
