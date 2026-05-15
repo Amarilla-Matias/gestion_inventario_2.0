@@ -1,7 +1,6 @@
 from fastapi import APIRouter
 from pydantic import BaseModel
-from app.database.database import agregar_clientes_db, listar_clientes_db, actualizar_cliente_db
-
+from app.database.data_base import actualizar_cliente_db, listar_clientes_db, agregar_clientes_db
 router = APIRouter(
     prefix="/clientes",
     tags = ["clientes"]
@@ -10,7 +9,6 @@ router = APIRouter(
 class ClienteUpdate(BaseModel):
     nombre: str
     apellido: str
-    cedula_ruc: str
     celular: str
     correo : str
 
@@ -36,13 +34,12 @@ def agregar_cliente(nombre, apellido, cedula_ruc, celular, correo):
     agregar_clientes_db(nombre, apellido, cedula_ruc, celular, correo)
     return {"mensaje": f"Cliente {nombre} creado"}
 
-@router.put("/{id}")
-def actualiza_cliente(id: int, cliente: ClienteUpdate):
-    actualizar_cliente_db(
-        id, 
+@router.put("/")
+def actualiza_cliente(cedula_ruc: str, cliente: ClienteUpdate):
+    actualizar_cliente_db( 
         cliente.nombre, 
         cliente.apellido, 
-        cliente.cedula_ruc, 
+        cedula_ruc, 
         cliente.celular, 
         cliente.correo)
     return {"mensaje": f"Datos del cliente {cliente.nombre} actualizado"}

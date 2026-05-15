@@ -99,11 +99,11 @@ def obtener_productos_db():
     return productos
 
 def obtener_producto_db(id_producto):
-    conn = sqlite3.connect("inventario.db")
-    cursor = conn.cursor()
+    conexion = conectar()
+    cursor = conexion.cursor()
     cursor.execute("SELECT id, nombre, precio, stock FROM productos WHERE id = ?", (id_producto,))
     producto = cursor.fetchone()
-    conn.close()
+    conexion.close()
     return producto
 
 
