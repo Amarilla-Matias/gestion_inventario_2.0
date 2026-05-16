@@ -29,7 +29,7 @@ def listar_roles():
         })
     return resultado
 
-@router.put("/rol/{id}")
+@router.put("/{id}")
 def actualizar_roles(id:int, rol:rolUpdate):
     actualizar_rol_db(
         rol.nombre_rol,
@@ -37,7 +37,7 @@ def actualizar_roles(id:int, rol:rolUpdate):
     )
     return{"mensaje":"Datos actualizados Exitosamentes"}
 
-@router.delete("/delete/{id}")
+@router.delete("/{id}")
 def eliminar_rol(id):
     eliminar_rol_db(id)
     return{"mensaje":"Datos eliminados Exitosamente!"}

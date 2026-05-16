@@ -219,3 +219,70 @@ def eliminar_rol_db(id):
     conexion.commit()
     conexion.close()
     return filas_afectadas
+
+#-------------------------------USUARIOS--------------------------------------
+def agregar_usuarios_db(username, password_hash, id_personal, id_rol):
+
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        INSERT INTO usuarios( username, password_hash, id_personal, id_rol)
+        VALUES(%s, %s, %s, %s)
+    """, (username, password_hash, id_personal, id_rol))
+
+    conexion.commit()
+    conexion.close()
+
+def listar_usuarios_db():
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute(""" SELECT * FROM usuarios """)
+    usuarios = cursor.fetchall()
+
+    conexion.close()
+    return usuarios
+
+def obtener_usuario_por_username(username):
+    conexion = conectar()
+    cursor = conexion.cursor()
+    cursor.execute("""
+        SELECT 
+            u.id, u.username, u.password_hash, 
+            r.nombre_rol,
+            p.nombre, p.apellido
+        FROM usuarios u
+        JOIN roles r ON u.id_personal = r.id
+        JOIN personal p ON u.id_rol = p.id
+        WHERE u.username = %s
+        """, (username,))
+    
+    usuario = cursor.fetchone()
+    conexion.close()
+    return usuario
+    
+
+def actualizar_usuario_db(id_usuario: int, id_rol:int):
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+        UPDATE usuarios
+        SET id_rol = %s
+        WHERE id = %s
+    """, (id_rol, id_usuario)
+    )
+    conexion.commit()
+    conexion.close()
+
+def eliminar_usuario_db(id):
+    conexion = conectar()
+    cursor = conexion.cursor()
+
+    cursor.execute("""
+    DELETE FROM usuarios WHERE id = ?
+    """, (id,))
+
+    conexion.commit()
+    conexion.close()

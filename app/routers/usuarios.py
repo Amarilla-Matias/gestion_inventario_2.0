@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from app.auth.auth import generar_hash, verificar_password, encode_token, decode_token
 from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
-from app.database.database import eliminar_usuario_db, actualizar_usuario_db, agregar_usuarios_db, obtener_usuario_por_username, listar_usuarios_db
+from app.database.data_base import actualizar_usuario_db, eliminar_usuario_db, listar_usuarios_db, obtener_usuario_por_username, agregar_usuarios_db
 from fastapi import APIRouter, Depends, HTTPException
 router = APIRouter(
     tags=["usuarios"]
@@ -11,12 +11,13 @@ oauth_scheme = OAuth2PasswordBearer(tokenUrl="token")
 class UsuarioCreate(BaseModel):
     username: str
     password: str
-    rol: str
+    id_personal: int
+    id_rol: int
+
 
 class UsuarioUpdate(BaseModel):
+    id_rol: int
     username: str
-    password: str
-    rol: str
 
 @router.post("/token")
 def login(form_data: OAuth2PasswordRequestForm = Depends()):
@@ -41,7 +42,7 @@ def get_current_user(token: str = Depends(oauth_scheme)):
 def verificar_admin(
     user: dict = Depends(get_current_user)
 ):
-    if user[3] != "admin":
+    if user[3] != "Administrador":
         raise HTTPException(status_code=400, detail="No tienes permisos")
     return user
 @router.get("/perfil")
@@ -54,34 +55,35 @@ def perfil(user:dict = Depends(get_current_user)):
 def listar_usuarios():
     usuario = listar_usuarios_db()
     resultado = []
-    for p in usuario:
+    for u in usuario:
         resultado.append({
-            "id": p[0],
-            "usuario": p[1],
-            "contraseña": p[2],
-            "rol": p[3]
+            "id": u[0],
+            "usuario": u[1],
+            "contraseña": u[2],
+            "id_personal": u[3],
+            "id_rol": u[4]
         })
     return resultado
 
 @router.post("/usuarios")
-def registrar_usuario(usuario: UsuarioCreate):
+def registrar_usuario(usuario: UsuarioCreate, admin = Depends(verificar_admin)):
 
     password_hash = generar_hash(usuario.password)
     agregar_usuarios_db(
         usuario.username, 
         password_hash, 
-        usuario.rol)
+        usuario.id_personal,
+        usuario.id_rol
+        )
     return {"mensaje": "Usuario creado exitosamente"}
 
 
 @router.put("/usuarios/{id}")
 def actualizar_usuario(id: int, usuario: UsuarioUpdate, admin = Depends(verificar_admin)):
-    password_hash = generar_hash(usuario.password)
+   
     actualizar_usuario_db(
         id,
-        usuario.username,
-        password_hash,
-        usuario.rol
+        usuario.id_rol
     )
     return {"mensaje": "Datos actualizados correctamente"}
 
